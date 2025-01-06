@@ -6,18 +6,18 @@ from langchain_core.documents import Document
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_community.vectorstores import FAISS
 from langchain_ollama import OllamaEmbeddings, OllamaLLM
+from langchain_google_genai import ChatGoogleGenerativeAI
 from dotenv import load_dotenv
-import json
 import urllib.parse
-import logging
 
-logger = logging.getLogger("main")
 load_dotenv()
 
 EMBED_MODEL = os.environ.get("EMBED_MODEL")
-LLM_MODEL = os.environ.get("LLM_MODEL")
 VECTOR_DIRECTORY = os.environ.get("VECTOR_DIRECTORY")
 UPLOAD_DIRECTORY = os.environ.get("UPLOAD_DIRECTORY")
+OLLAMA_SERVER = os.environ.get("OLLAMA_SERVER")
+GEMINI_MODEL = os.environ.get("GEMINI_MODEL")
+GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
 
 
 def fn(res):
@@ -32,15 +32,17 @@ def fn(res):
 
 def pdf_to_url(path: str, page_number: int):
     file_url = urllib.parse.urljoin(
-        "http://localhost:8000/fileserver", urllib.request.pathname2url(path)
+        f"http://localhost:8000/fileserver/", urllib.request.pathname2url(path)
     )
-    return f"{file_url}#page={page_number}"
+    res = f"{file_url}#page={page_number}"
+    print(f"{path} and {page_number} -> {res}")
+    return res
 
 
 async def handle_query(text: str) -> Dict[str, str]:
     print(f"handling query: {text}")
 
-    relevant_docs = await fetch_relevant(text, 5, 0.5)  # list[tuple[Document, float]]
+    relevant_docs = await fetch_relevant(text, 5, 0.4)  # list[tuple[Document, float]]
 
     ctx = (
         fn(relevant_docs)
@@ -54,10 +56,11 @@ Following is information to help answer this query. If using information from a 
 {ctx}
 """.strip()
 
-    print(f"Invoking model: {LLM_MODEL}")
-
-    model = OllamaLLM(model=LLM_MODEL)
-    response = await model.ainvoke(prompt)
+    # print(f"Invoking model: openhermes")
+    # model = OllamaLLM(model="openhermes", base_url=OLLAMA_SERVER)
+    print(f"Invoking model: {GEMINI_MODEL}")
+    model = ChatGoogleGenerativeAI(model=GEMINI_MODEL, api_key=GEMINI_API_KEY)
+    response = (await model.ainvoke(prompt)).content
 
     return {
         "response": response,
@@ -79,13 +82,16 @@ async def embed_and_save_pdf(docnames: List[str]) -> None:
 
     pages = []
     for docname in docnames:
-        loader = PyPDFLoader(os.path.join(UPLOAD_DIRECTORY, docname))
+        loader = PyPDFLoader(os.path.join(UPLOAD_DIRECTORY, docname).replace("\\", "/"))
         async for page in loader.alazy_load():
+            page.metadata["source"] = page.metadata["source"][
+                len(UPLOAD_DIRECTORY) + 1 :
+            ]
             pages.append(page)
 
     print(f"Pages: {len(pages)}")
 
-    model = OllamaEmbeddings(model=EMBED_MODEL)
+    model = OllamaEmbeddings(model=EMBED_MODEL, base_url=OLLAMA_SERVER)
     newvs = await FAISS.afrom_documents(pages, model)
 
     if len(os.listdir(VECTOR_DIRECTORY)) != 0:
@@ -102,7 +108,7 @@ async def embed_and_save_pdf(docnames: List[str]) -> None:
 
 
 async def fetch_relevant(text: str, k, threshold) -> list[tuple[Document, float]]:
-    model = OllamaEmbeddings(model=EMBED_MODEL)
+    model = OllamaEmbeddings(model=EMBED_MODEL, base_url=OLLAMA_SERVER)
     vs = FAISS.load_local(VECTOR_DIRECTORY, model, allow_dangerous_deserialization=True)
     if k is None:
         k = 100
