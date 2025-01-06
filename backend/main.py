@@ -11,11 +11,13 @@ from typing import List
 from pathlib import Path
 
 logger = logging.getLogger(__name__)
-load_dotenv()
+# load_dotenv()
 UPLOAD_DIRECTORY = os.environ.get("UPLOAD_DIRECTORY")
 VECTOR_DIRECTORY = os.environ.get("VECTOR_DIRECTORY")
 BACKEND_DIR = Path("./uploaded_files").resolve()
 
+print(f"UPLOAD_DIRECTORY = {UPLOAD_DIRECTORY}")
+print(f"VECTOR_DIRECTORY = {VECTOR_DIRECTORY}")
 if not os.path.exists(UPLOAD_DIRECTORY):
     os.makedirs(UPLOAD_DIRECTORY)
 
