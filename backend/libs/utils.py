@@ -4,6 +4,10 @@ import time
 import urllib.request
 import urllib.parse
 import json
+import logging
+import asyncio
+
+logger = logging.getLogger("uvicorn.error")
 
 
 def get_config(*args) -> str:
@@ -20,12 +24,21 @@ BACKEND_BASE_URL = get_config("ai", "embed", "base_url")
 def benchmark(label: str):
     def decorator(func):
         def wrapper(*args, **kwargs):
-            start = time.perf_counter()
+            start = time.time()
             res = func(*args, **kwargs)
-            print(label, f"({time.perf_counter()-start:.1f}s)")
+            logger.debug(f"{label} ({time.time()-start:2.2f}s)")
             return res
 
-        return wrapper
+        async def asyncwrapper(*args, **kwargs):
+            start = time.time()
+            res = await func(*args, **kwargs)
+            logger.debug(f"{label} ({time.time()-start:2.2f}s)")
+            return res
+
+        if asyncio.iscoroutinefunction(func):
+            return asyncwrapper
+        else:
+            return wrapper
 
     return decorator
 
@@ -39,9 +52,10 @@ def empty_folder(folder: str):
                 os.unlink(file_path)
             elif os.path.isdir(file_path):
                 shutil.rmtree(file_path)
-            print(f"Deleted '{file_path}'")
+            logger.debug(f"Deleted '{file_path}'")
         except Exception as e:
-            print("Failed to delete %s. Reason: %s" % (file_path, e))
+            logger.debug("Failed to delete %s. Reason: %s" % (file_path, e))
+    logger.debug("Emptied saved resources")
 
 
 def pdf_to_url(path: str, page_number: int):
@@ -49,5 +63,5 @@ def pdf_to_url(path: str, page_number: int):
         BACKEND_BASE_URL, "fileserver/", urllib.request.pathname2url(path)
     )
     res = f"{file_url}#page={page_number}"
-    print(f"{path} and {page_number} -> {res}")
+    # logger.debug(f"{path} and {page_number} -> {res}")
     return res

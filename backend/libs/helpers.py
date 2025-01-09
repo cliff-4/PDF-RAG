@@ -3,7 +3,10 @@ from typing import List, Dict
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_core.documents import Document
 from libs.utils import pdf_to_url, get_config
-import libs.models
+import logging
+
+logger = logging.getLogger("uvicorn.error")
+
 
 UPLOAD_DIRECTORY = get_config("UPLOAD_DIRECTORY")
 
@@ -17,7 +20,7 @@ async def handle_query(text: str) -> Dict[str, str]:
     Returns:
         Dict[str, str]: Dictionary containing response string and List[Dict] of source URLs
     """
-    print(f"Handling query: {text}")
+    logger.debug(f"Handling query: {(text if len(text) <= 20 else text[:17]+'...')}")
 
     relevant_docs = await libs.models.fetch_relevant(text, 5, 0.4)
 
@@ -65,11 +68,12 @@ async def embed_and_save_pdf(docnames: List[str]) -> None:
         docnames (List[str]): List of file paths
     """
 
-    print(f"Loading {len(docnames)} doc(s)")
+    logger.debug(f"Loading {len(docnames)} doc(s)")
 
     pages: List[Document] = []
     try:
-        for docname in docnames:
+        for i, docname in enumerate(docnames):
+            logger.debug(f"Doc {i+1} of {len(docnames)}")
 
             loader = PyPDFLoader(
                 os.path.join(UPLOAD_DIRECTORY, docname).replace("\\", "/")
@@ -80,8 +84,8 @@ async def embed_and_save_pdf(docnames: List[str]) -> None:
                 ]
                 pages.append(page)
 
-        print(f"Embedding {len(pages)} pages")
+        logger.debug(f"Embedding {len(pages)} pages")
 
         await libs.models.store_local(pages)
     except Exception as e:
-        print(f"An error occured: {e}")
+        logger.error(f"An error occured: {e}")

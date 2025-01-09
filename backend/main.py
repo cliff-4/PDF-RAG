@@ -6,18 +6,15 @@ import os
 import aiofiles
 from libs.helpers import handle_query, embed_and_save_pdf
 from libs.utils import get_config, empty_folder
-import logging
-from typing import List
-from pathlib import Path
 
-logger = logging.getLogger(__name__)
-# load_dotenv()
+logger = logging.getLogger("uvicorn.error")
+
 UPLOAD_DIRECTORY = get_config("UPLOAD_DIRECTORY")
 VECTOR_DIRECTORY = get_config("VECTOR_DIRECTORY")
 BACKEND_DIR = Path("./uploaded_files").resolve()
 
-print(f"UPLOAD_DIRECTORY = {UPLOAD_DIRECTORY}")
-print(f"VECTOR_DIRECTORY = {VECTOR_DIRECTORY}")
+logger.debug(f"UPLOAD_DIRECTORY = {UPLOAD_DIRECTORY}")
+logger.debug(f"VECTOR_DIRECTORY = {VECTOR_DIRECTORY}")
 if not os.path.exists(UPLOAD_DIRECTORY):
     os.makedirs(UPLOAD_DIRECTORY)
 
@@ -63,6 +60,7 @@ async def upload_file(
                 content = await file.read()  # Read file content in chunks
                 await out_file.write(content)  # Write chunks to the file system
             docnames.append(file.filename)
+            logger.debug(f"Saved {file.filename}")
 
         background_tasks.add_task(embed_and_save_pdf, docnames)
 
@@ -97,7 +95,6 @@ class QueryRequest(BaseModel):
 
 @app.post("/ask")
 async def ask_query(request: QueryRequest):
-    print(request.inputValue)
     res = await handle_query(request.inputValue)
     return JSONResponse(content=res)
 
