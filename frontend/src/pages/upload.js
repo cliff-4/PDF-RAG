@@ -65,7 +65,7 @@ const FileUploadPage = () => {
                 }
             );
             alert(response.data.message);
-            reloadPage();
+            // reloadPage();
         } catch (error) {
             console.error("An error occured: " + error);
             alert(error);
@@ -178,7 +178,7 @@ const FileUploadPage = () => {
                                 className="bg-red-500 text-white rounded py-2 px-4 hover:bg-red-600"
                                 onClick={() => {
                                     clearFiles();
-                                    reloadPage();
+                                    // reloadPage();
                                 }}
                             >
                                 Clear files
@@ -247,7 +247,6 @@ const FileUploadPage = () => {
                         onClick={() => {
                             setConvo([]);
                             setSources([]);
-                            alert("Cleared conversation");
                             syncConvo([]);
                         }}
                     >
