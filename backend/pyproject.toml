@@ -21,6 +21,3 @@ dependencies = [
     "setuptools>=75.7.0",
     "uvicorn>=0.34.0",
 ]
-
-[tool.setuptools]
-packages = ["libs"]

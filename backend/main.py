@@ -4,16 +4,16 @@ from fastapi.responses import JSONResponse, HTMLResponse, FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 import os
 import aiofiles
-from libs.helpers import handle_query, embed_and_save_pdf, empty_folder
-from dotenv import load_dotenv
+from libs.helpers import handle_query, embed_and_save_pdf
+from libs.utils import get_config, empty_folder
 import logging
 from typing import List
 from pathlib import Path
 
 logger = logging.getLogger(__name__)
 # load_dotenv()
-UPLOAD_DIRECTORY = os.environ.get("UPLOAD_DIRECTORY")
-VECTOR_DIRECTORY = os.environ.get("VECTOR_DIRECTORY")
+UPLOAD_DIRECTORY = get_config("UPLOAD_DIRECTORY")
+VECTOR_DIRECTORY = get_config("VECTOR_DIRECTORY")
 BACKEND_DIR = Path("./uploaded_files").resolve()
 
 print(f"UPLOAD_DIRECTORY = {UPLOAD_DIRECTORY}")
@@ -97,6 +97,7 @@ class QueryRequest(BaseModel):
 
 @app.post("/ask")
 async def ask_query(request: QueryRequest):
+    print(request.inputValue)
     res = await handle_query(request.inputValue)
     return JSONResponse(content=res)
 
