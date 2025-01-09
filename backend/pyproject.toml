@@ -2,6 +2,9 @@
 requires = ["setuptools>=42", "wheel"]
 build-backend = "setuptools.build_meta"
 
+[tool.setuptools]
+packages = []
+
 [project]
 name = "pdf-rag"
 version = "0.1.0"
@@ -21,6 +24,3 @@ dependencies = [
     "setuptools>=75.7.0",
     "uvicorn>=0.34.0",
 ]
-
-[tool.setuptools]
-packages = ["libs"]

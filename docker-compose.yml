@@ -8,14 +8,7 @@ services:
       - "8000:8000"
     environment:
       - UVICORN_RELOAD=true
-      - UPLOAD_DIRECTORY=uploaded_files
-      - VECTOR_DIRECTORY=vectorstore
-      - EMBED_MODEL=nomic-embed-text
-      - LLM_MODEL=openhermes
-      - OLLAMA_SERVER=http://ollama_server:11434
       - NEXT_PUBLIC_BACKEND_URL=http://localhost:8000
-      - GEMINI_MODEL=gemini-1.5-flash
-      - GEMINI_API_KEY=xyzabc
     networks:
       - net
 

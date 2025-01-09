@@ -1,23 +1,29 @@
+import os
+import aiofiles
+from pathlib import Path
+import logging
+
+# Linting
 from pydantic import BaseModel
+from typing import List
+
+# FastAPI
 from fastapi import FastAPI, UploadFile, File, HTTPException, BackgroundTasks
 from fastapi.responses import JSONResponse, HTMLResponse, FileResponse
 from fastapi.middleware.cors import CORSMiddleware
-import os
-import aiofiles
-from libs.helpers import handle_query, embed_and_save_pdf, empty_folder
-from dotenv import load_dotenv
-import logging
-from typing import List
-from pathlib import Path
 
-logger = logging.getLogger(__name__)
-# load_dotenv()
-UPLOAD_DIRECTORY = os.environ.get("UPLOAD_DIRECTORY")
-VECTOR_DIRECTORY = os.environ.get("VECTOR_DIRECTORY")
+# Custom definitions
+from libs.helpers import handle_query, embed_and_save_pdf
+from libs.utils import get_config, empty_folder
+
+logger = logging.getLogger("uvicorn.error")
+
+UPLOAD_DIRECTORY = get_config("UPLOAD_DIRECTORY")
+VECTOR_DIRECTORY = get_config("VECTOR_DIRECTORY")
 BACKEND_DIR = Path("./uploaded_files").resolve()
 
-print(f"UPLOAD_DIRECTORY = {UPLOAD_DIRECTORY}")
-print(f"VECTOR_DIRECTORY = {VECTOR_DIRECTORY}")
+logger.debug(f"UPLOAD_DIRECTORY = {UPLOAD_DIRECTORY}")
+logger.debug(f"VECTOR_DIRECTORY = {VECTOR_DIRECTORY}")
 if not os.path.exists(UPLOAD_DIRECTORY):
     os.makedirs(UPLOAD_DIRECTORY)
 
@@ -63,6 +69,7 @@ async def upload_file(
                 content = await file.read()  # Read file content in chunks
                 await out_file.write(content)  # Write chunks to the file system
             docnames.append(file.filename)
+            logger.debug(f"Saved {file.filename}")
 
         background_tasks.add_task(embed_and_save_pdf, docnames)
 
@@ -134,7 +141,7 @@ async def list_directory():
         html_content += "<ul>"
         for file in files:
             file_path = f"/fileserver/{file}"  # Use endpoint to link to the file
-            html_content += f'<li><a href="{file_path}">{file}</a></li>'
+            html_content += f'<li><a href="{file_path}" target="_blank">{file}</a></li>'
         html_content += "</ul>"
     else:
         html_content += "<p><i>Directory is empty</i></p>"

@@ -1,3 +1,4 @@
 *.mkv
 *.pdf
 a.*
+backend/config.json
