@@ -18,7 +18,7 @@ def get_config(*args) -> str:
     return config
 
 
-BACKEND_BASE_URL = get_config("ai", "embed", "base_url")
+BACKEND_BASE_URL = get_config("BACKEND_HOST")
 
 
 def benchmark(label: str):
@@ -60,7 +60,7 @@ def empty_folder(folder: str):
 
 def pdf_to_url(path: str, page_number: int):
     file_url = urllib.parse.urljoin(
-        BACKEND_BASE_URL, "fileserver/", urllib.request.pathname2url(path)
+        f"{BACKEND_BASE_URL}/fileserver/", urllib.request.pathname2url(path)
     )
     res = f"{file_url}#page={page_number}"
     # logger.debug(f"{path} and {page_number} -> {res}")
