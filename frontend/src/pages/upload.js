@@ -131,8 +131,8 @@ const FileUploadPage = () => {
     return (
         <div className="w-full p-10 flex flex-col gap-4">
             <p className="text-5xl w-full text-center m-4">Upload PDF File</p>
-            <div className="flex flex-row justify-around">
-                <div className="border-2 rounded-lg p-4">
+            <div className="flex flex-row justify-around gap-4">
+                <div className="w-full border-2 rounded-lg p-4">
                     <Formik
                         initialValues={{ files: [] }}
                         onSubmit={(values, { resetForm }) => {
@@ -186,7 +186,7 @@ const FileUploadPage = () => {
                         </p>
                     </div>
                 </div>
-                <div className="flex flex-col justify-center">
+                <div className="w-full border-2 rounded-lg p-4">
                     <Formik
                         initialValues={{ inputValue: "" }}
                         onSubmit={(values, { resetForm }) => {
@@ -195,18 +195,16 @@ const FileUploadPage = () => {
                         }}
                     >
                         {() => (
-                            <Form className="flex flex-col border-2 rounded-lg gap-4 p-4">
-                                <div className="w-full">
-                                    <Field
-                                        name="inputValue"
-                                        type="text"
-                                        placeholder="ask me anything!"
-                                        className="border rounded p-2 w-full text-gray-700"
-                                    />
-                                </div>
+                            <Form className="h-full flex flex-col gap-4">
+                                <Field
+                                    name="inputValue"
+                                    type="text"
+                                    placeholder="ask me anything!"
+                                    className="h-full border rounded p-4 text-gray-700"
+                                />
                                 <button
                                     type="submit"
-                                    className="bg-blue-500 text-white rounded py-2 px-4 hover:bg-blue-600"
+                                    className="h-min bg-blue-500 text-white rounded py-2 px-4 hover:bg-blue-600"
                                 >
                                     Submit
                                 </button>
