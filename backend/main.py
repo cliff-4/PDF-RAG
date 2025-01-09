@@ -1,9 +1,18 @@
+import os
+import aiofiles
+from pathlib import Path
+import logging
+
+# Linting
 from pydantic import BaseModel
+from typing import List
+
+# FastAPI
 from fastapi import FastAPI, UploadFile, File, HTTPException, BackgroundTasks
 from fastapi.responses import JSONResponse, HTMLResponse, FileResponse
 from fastapi.middleware.cors import CORSMiddleware
-import os
-import aiofiles
+
+# Custom definitions
 from libs.helpers import handle_query, embed_and_save_pdf
 from libs.utils import get_config, empty_folder
 
@@ -132,7 +141,7 @@ async def list_directory():
         html_content += "<ul>"
         for file in files:
             file_path = f"/fileserver/{file}"  # Use endpoint to link to the file
-            html_content += f'<li><a href="{file_path}">{file}</a></li>'
+            html_content += f'<li><a href="{file_path}" target="_blank">{file}</a></li>'
         html_content += "</ul>"
     else:
         html_content += "<p><i>Directory is empty</i></p>"

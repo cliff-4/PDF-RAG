@@ -3,6 +3,7 @@ from typing import List, Dict
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_core.documents import Document
 from libs.utils import pdf_to_url, get_config
+from libs.models import fetch_relevant, get_llm_response, store_local
 import logging
 
 logger = logging.getLogger("uvicorn.error")
@@ -22,7 +23,7 @@ async def handle_query(text: str) -> Dict[str, str]:
     """
     logger.debug(f"Handling query: {(text if len(text) <= 20 else text[:17]+'...')}")
 
-    relevant_docs = await libs.models.fetch_relevant(text, 5, 0.4)
+    relevant_docs = await fetch_relevant(text, 5, 0.4)
 
     def concat(docs):
         formatted_docs = []
@@ -49,7 +50,7 @@ Following is information to help answer this query. If using information from a 
 {ctx}
 """.strip()
 
-    response = await libs.models.get_llm_response(prompt)
+    response = await get_llm_response(prompt)
 
     return {
         "response": response,
@@ -86,6 +87,6 @@ async def embed_and_save_pdf(docnames: List[str]) -> None:
 
         logger.debug(f"Embedding {len(pages)} pages")
 
-        await libs.models.store_local(pages)
+        await store_local(pages)
     except Exception as e:
         logger.error(f"An error occured: {e}")

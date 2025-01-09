@@ -31,6 +31,13 @@ async def get_llm_response(prompt: str) -> str:
         return response
 
 
+def get_embedding_model() -> Embeddings:
+    emb_conf = get_config("ai", "embed")
+    # logger.debug(f"Using embedding config: {json.dumps(emb_conf, indent=2)}")
+    model = OllamaEmbeddings(model=emb_conf["model"], base_url=emb_conf["base_url"])
+    return model
+
+
 @benchmark("Fetched pages")
 async def fetch_relevant(
     text: str, k: int, threshold: float
@@ -45,16 +52,6 @@ async def fetch_relevant(
     res = await vs.asimilarity_search_with_relevance_scores(text, k=k)
     res = [x for x in res if x[1] >= threshold]
     return res
-
-
-def get_embedding_model() -> Embeddings:
-    emb_conf = get_config("ai", "embed")
-    if emb_conf["type"] == "ollama":
-        model = OllamaEmbeddings(model=emb_conf["model"], base_url=emb_conf["base_url"])
-    else:
-        # To be written for other providers
-        pass
-    return model
 
 
 @benchmark("Generated and saved embeddings")
