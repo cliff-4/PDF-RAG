@@ -33,6 +33,7 @@ const FileUploadPage = () => {
 
     useEffect(() => {
         let c = localStorage.getItem("convoHistory");
+        if (c === null) c = "[]";
         console.log(`Setting convo to ${c}`);
         if (c) {
             c = JSON.parse(c);
