@@ -12,3 +12,4 @@ wheels/
 uploaded_files
 vectorstore
 a.ipynb
+.vscode/*
